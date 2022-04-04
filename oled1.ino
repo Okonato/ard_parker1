@@ -4,12 +4,14 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-
 // Define Trig and Echo pin:
 #define trigPin 14
 #define echoPin 12
+
 #define  Led  16
 #define  buzzer 13
+#define out1 0
+#define out2 2
 
 #define TONE_USE_INT
 #define TONE_PITCH 434
@@ -20,37 +22,39 @@
 
 /////////////
 int melody[] = {
-  
-  // Dart Vader theme (Imperial March) - Star wars 
+
+  // Dart Vader theme (Imperial March) - Star wars
   // Score available at https://musescore.com/user/202909/scores/1141521
   // The tenor saxophone part was used
-  
-  NOTE_AS4,8, NOTE_AS4,8, NOTE_AS4,8,//1
-  NOTE_F5,2, NOTE_C6,2,
-  NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F6,2, NOTE_C6,4,  
-  NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F6,2, NOTE_C6,4,  
-  NOTE_AS5,8, NOTE_A5,8, NOTE_AS5,8, NOTE_G5,2, NOTE_C5,8, NOTE_C5,8, NOTE_C5,8,
-  NOTE_F5,2, NOTE_C6,2,
-  NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F6,2, NOTE_C6,4,  
-  
-  NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F6,2, NOTE_C6,4, //8  
-  NOTE_AS5,8, NOTE_A5,8, NOTE_AS5,8, NOTE_G5,2, NOTE_C5,-8, NOTE_C5,16, 
-  NOTE_D5,-4, NOTE_D5,8, NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F5,8,
-  NOTE_F5,8, NOTE_G5,8, NOTE_A5,8, NOTE_G5,4, NOTE_D5,8, NOTE_E5,4,NOTE_C5,-8, NOTE_C5,16,
-  NOTE_D5,-4, NOTE_D5,8, NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F5,8,
-  
-  NOTE_C6,-8, NOTE_G5,16, NOTE_G5,2, REST,8, NOTE_C5,8,//13
-  NOTE_D5,-4, NOTE_D5,8, NOTE_AS5,8, NOTE_A5,8, NOTE_G5,8, NOTE_F5,8,
-  NOTE_F5,8, NOTE_G5,8, NOTE_A5,8, NOTE_G5,4, NOTE_D5,8, NOTE_E5,4,NOTE_C6,-8, NOTE_C6,16,
-  NOTE_F6,4, NOTE_DS6,8, NOTE_CS6,4, NOTE_C6,8, NOTE_AS5,4, NOTE_GS5,8, NOTE_G5,4, NOTE_F5,8,
-  NOTE_C6,1
-  
+
+  NOTE_AS4, 8, NOTE_AS4, 8, NOTE_AS4, 8, //1
+  NOTE_F5, 2, NOTE_C6, 2,
+  NOTE_AS5, 8, NOTE_A5, 8, NOTE_G5, 8, NOTE_F6, 2, NOTE_C6, 4,
+  NOTE_AS5, 8, NOTE_A5, 8, NOTE_G5, 8, NOTE_F6, 2, NOTE_C6, 4,
+  NOTE_AS5, 8, NOTE_A5, 8, NOTE_AS5, 8, NOTE_G5, 2, NOTE_C5, 8, NOTE_C5, 8, NOTE_C5, 8,
+  NOTE_F5, 2, NOTE_C6, 2,
+  NOTE_AS5, 8, NOTE_A5, 8, NOTE_G5, 8, NOTE_F6, 2, NOTE_C6, 4,
+
+  NOTE_AS5, 8, NOTE_A5, 8, NOTE_G5, 8, NOTE_F6, 2, NOTE_C6, 4, //8
+  NOTE_AS5, 8, NOTE_A5, 8, NOTE_AS5, 8, NOTE_G5, 2, NOTE_C5, -8, NOTE_C5, 16,
+  NOTE_D5, -4, NOTE_D5, 8, NOTE_AS5, 8, NOTE_A5, 8, NOTE_G5, 8, NOTE_F5, 8,
+  NOTE_F5, 8, NOTE_G5, 8, NOTE_A5, 8, NOTE_G5, 4, NOTE_D5, 8, NOTE_E5, 4, NOTE_C5, -8, NOTE_C5, 16,
+  NOTE_D5, -4, NOTE_D5, 8, NOTE_AS5, 8, NOTE_A5, 8, NOTE_G5, 8, NOTE_F5, 8,
+
+  NOTE_C6, -8, NOTE_G5, 16, NOTE_G5, 2, REST, 8, NOTE_C5, 8, //13
+  NOTE_D5, -4, NOTE_D5, 8, NOTE_AS5, 8, NOTE_A5, 8, NOTE_G5, 8, NOTE_F5, 8,
+  NOTE_F5, 8, NOTE_G5, 8, NOTE_A5, 8, NOTE_G5, 4, NOTE_D5, 8, NOTE_E5, 4, NOTE_C6, -8, NOTE_C6, 16,
+  NOTE_F6, 4, NOTE_DS6, 8, NOTE_CS6, 4, NOTE_C6, 8, NOTE_AS5, 4, NOTE_GS5, 8, NOTE_G5, 4, NOTE_F5, 8,
+  NOTE_C6, 1
+
 };
 
 // sizeof gives the number of bytes, each int value is composed of two bytes (16 bits)
 // there are two values per note (pitch and duration), so for each note there are four bytes
 int notes = sizeof(melody) / sizeof(melody[0]) / 2;
-
+// change this to make the song slower or faster
+//int tempo = 108;
+int tempo = 120;
 // this calculates the duration of a whole note in ms
 int wholenote = (60000 * 4) / tempo;
 
@@ -58,7 +62,6 @@ int divider = 0, noteDuration = 0;
 /////////////
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
-
 
 // On an arduino LEONARDO:   2(SDA),  3(SCL), ...
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -87,67 +90,69 @@ static const unsigned char PROGMEM logo_bmp[] =
   0b00111111, 0b11110000,
   0b01111100, 0b11110000,
   0b01110000, 0b01110000,
-  0b00000000, 0b00110000 };
+  0b00000000, 0b00110000
+};
 
-  // Define variables:
+// Define variables:
 long duration;
 int distance;
-int maks_odl=300;
-int czas_przerwy=2000;
-int dzwiek_czas=500;
-  
-unsigned long dzwiek_przerwa,   swieci=600;
-unsigned long przerwa_zapis=0,  przerwa=300;
+int maks_odl = 300;
+int czas_przerwy = 2000;
+int dzwiek_czas = 500;
 
-////// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  gdy odl mniejsza od granicznej 
-void miga(float odl){
+unsigned long dzwiek_przerwa,   swieci = 600;
+unsigned long przerwa_zapis = 0,  przerwa = 300;
 
-//przerwa=round((1-(odl/100))*czas_przerwy);
+////// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  gdy odl mniejsza od granicznej
+void miga(float odl) {
+  przerwa = round(((odl / 100)) * czas_przerwy);
 
-przerwa=round(((odl/100))*czas_przerwy);
-
-//przerwa1=((odl)/(maks));//*2000;
-if (millis()%200==0) 
-{Serial.print(odl);  Serial.print(" przerwa=");  Serial.println(przerwa);}
-//delay(100);
-
-unsigned long  roznica_czasu,roznica_czasu_dzwiek;
-  roznica_czasu=millis()-przerwa_zapis;
-  if (digitalRead(Led)==LOW and roznica_czasu>przerwa)
+  //przerwa1=((odl)/(maks));//*2000;
+  if (millis() % 200 == 0)
   {
-    digitalWrite(Led,HIGH);
-  tone(buzzer, NOTE_E1, 200);
-    przerwa_zapis=millis();
+    Serial.print(odl);
+    Serial.print(" przerwa=");
+    Serial.println(przerwa);
   }
-  else
-  if (digitalRead(Led)==HIGH and roznica_czasu>przerwa)
+  //delay(100);
+
+  unsigned long  roznica_czasu, roznica_czasu_dzwiek;
+  roznica_czasu = millis() - przerwa_zapis;
+  if (digitalRead(Led) == LOW and roznica_czasu > przerwa)
   {
-    digitalWrite(Led,LOW);
-    przerwa_zapis=millis();
+    digitalWrite(Led, HIGH);
+    digitalWrite(out1, HIGH);
+    digitalWrite(out2, LOW);
+    przerwa_zapis = millis();
+  }
+  else if (digitalRead(Led) == HIGH and roznica_czasu > przerwa)
+  {
+    tone(buzzer, NOTE_F6, 100);
+    digitalWrite(Led, LOW);
+    digitalWrite(out2, HIGH);
+    digitalWrite(out1, LOW);
+    przerwa_zapis = millis();
   }
 }
 
 ///// *****************
-void Play_CrazyFrog()
-{
-/*
-  for (int thisNote = 0; thisNote < (sizeof(CrazyFrog_note)/sizeof(int)); thisNote++) {
 
-    int noteDuration = 1000 / CrazyFrog_duration[thisNote]; //convert duration to time delay
-    tone(8, CrazyFrog_note[thisNote], noteDuration);
-
-    int pauseBetweenNotes = noteDuration * 1.30;//Here 1.30 is tempo, decrease to play it faster
-    delay(pauseBetweenNotes);
-    noTone(8); //stop music on pin 8 
-    }
-    */
-}
 /// *************************************
 void setup() {
-//// &&&&&&&&&&&&&&
+  Serial.begin(9600);
 
- for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
 
+  // Define inputs and outputs:
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(Led, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(out1, OUTPUT);
+  pinMode(out2, OUTPUT);
+  //// &&&&&&&&&&&&&&
+
+  // for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
+  for (int thisNote = 0; thisNote < 2; thisNote = thisNote + 2) { // skrocenie
     // calculates the duration of each note
     divider = melody[thisNote + 1];
     if (divider > 0) {
@@ -160,56 +165,34 @@ void setup() {
     }
 
     // we only play the note for 90% of the duration, leaving 10% as a pause
-    tone(buzzer, melody[thisNote], noteDuration*0.9);
+    tone(buzzer, melody[thisNote], noteDuration * 0.9);
 
     // Wait for the specief duration before playing the next note.
     delay(noteDuration);
-    
+
     // stop the waveform generation before the next note.
     noTone(buzzer);
   }
 
-///// &&&&&&&&&&&&&&&
+  ///// &&&&&&&&&&&&&&&
 
-    // Define inputs and outputs:
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  pinMode(Led, OUTPUT);  
-  pinMode(buzzer, OUTPUT);  
-
-  
-  Serial.begin(9600);
-/*
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-  */
-
-    // sygnal dzwikowy START
-    digitalWrite(Led, LOW);
- tone(buzzer, NOTE_G3, 500);
-    delay(500);    
-    digitalWrite(Led, HIGH);
- tone(buzzer, NOTE_G1, 300);
-    delay(500); 
-    delay(200);
-    digitalWrite(Led, LOW);
- tone(buzzer, NOTE_E1, 200);
-    delay(100);    
-    digitalWrite(Led, HIGH);
-  digitalWrite(buzzer,LOW);
-////////////
+  // sygnal dzwikowy START
+  digitalWrite(Led, LOW);
+  digitalWrite(Led, HIGH);
+  delay(200);
+  digitalWrite(Led, LOW);
+  delay(100);
+  digitalWrite(Led, HIGH);
+  ////////////
   Serial.println("OLED FeatherWing test");
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
 
-////////////
+  ////////////
   // Show initial display buffer contents on the screen --
   // the library initializes this with an Adafruit splash screen.
   display.display();
- // Clear the buffer
+  // Clear the buffer
   display.clearDisplay();
 
   // Draw a single pixel in white
@@ -221,67 +204,65 @@ void setup() {
   delay(200);
 
 
-//  testanimate(logo_bmp, LOGO_WIDTH, LOGO_HEIGHT); // Animate bitmaps
-
-     display.clearDisplay();
+  display.clearDisplay();
 
   display.setTextSize(3); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
   delay(10);
   display.setCursor(10, 0);
   display.println(F("START"));
-  display.display();  
+  display.display();
   display.setCursor(0, 10);
-  display.write(219); 
+  display.write(219);
   delay(20);
-    display.display();      // Show initial text  
- // delay(200);
-  for(int i=0;i<100;i++)
+  display.display();      // Show initial text
+  // delay(200);
+  for (int i = 0; i < 100; i++)
   {
     display.setCursor(i, 10);
-    display.write(219); 
+    display.write(219);
     delay(1);
     display.display();      // Show initial text
   }
   display.clearDisplay();
   display.invertDisplay(false);
 
-//delay(200);
+  //delay(200);
 }
 
 void loop() {
-  
-///////// &&&&&&&&&&&&&&&&&&&&&&&&
-odczyt_odl();  // odczytuje odlebuzzerc i wyrzuca WART "distance"
 
-display.setTextSize(2); // Draw 2X-scale text
-display.setTextColor(SSD1306_WHITE);
- 
-//Serial.print(" Odlebuzzerc = ");  Serial.print(distance);  Serial.println(" cm    ");
+  ///////// &&&&&&&&&&&&&&&&&&&&&&&&
+  odczyt_odl();  // odczytuje odlebuzzerc i wyrzuca WART "distance"
 
-display.clearDisplay();
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
 
-if(distance>maks_odl) distance=maks_odl;  // wartosc graniczna MAX odległosci
+  //Serial.print(" Odlebuzzerc = ");  Serial.print(distance);  Serial.println(" cm    ");
 
-int procent=(distance*100)/200;
-if(procent>100) procent=100;
+  display.clearDisplay();
 
-display.setCursor(10, 0);
-  if(distance<200)   
+  if (distance > maks_odl) distance = maks_odl; // wartosc graniczna MAX odległosci
+
+  int procent = (distance * 100) / 200;
+  if (procent > 100) procent = 100;
+
+  display.setCursor(10, 0);
+  if (distance < 200)
   {
-  miga(procent);   // co ma zrobic miganie 
+    miga(procent);   // co ma zrobic miganie
     display.print(distance);
-    display.print("");  
+    display.print("");
   }
   else
   {
-   digitalWrite(Led,HIGH);
+    digitalWrite(Led, HIGH);
     display.print(">200");
   }
-  display.setCursor(65, 0);   display.print((procent)); 
+  display.setCursor(65, 0);   display.print((procent));
   display.setCursor(105, 0);    display.print("%");
   display.fillRect(10, 20, procent, 8, WHITE);
-  display.display(); 
+  display.display();
 
   display.display();      // Show initial text
   delay(10);
@@ -290,10 +271,10 @@ display.setCursor(10, 0);
 
 }
 
-  ////// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  odczytyje odlebuzzerc z modulu ECHO
+////// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  odczytyje odlebuzzerc z modulu ECHO
 void odczyt_odl()
 {
-// Clear the trigPin by setting it LOW:
+  // Clear the trigPin by setting it LOW:
   digitalWrite(trigPin, LOW);
   delayMicroseconds(5);
 
@@ -304,9 +285,9 @@ void odczyt_odl()
 
   // Read the echoPin, pulseIn() returns the duration (length of the pulse) in microseconds:
   // Calculate the distance:
-  
+
   duration = pulseIn(echoPin, HIGH);
   distance = duration * 0.034 / 2;
-  
-//  return distance;
+
+  //  return distance;
 }
